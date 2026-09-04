@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HyperShield AI - Hypertension Risk Predictor & Dietary Advisor</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <i class="fa-solid fa-heart-pulse logo-icon"></i>
+        <div class="logo-text">
+          <span class="brand-name">HyperShield <span class="accent-text">AI</span></span>
+          <span class="sub-name">Hypertension Clinical Intelligence</span>
+        </div>
+      </div>
+      
+      <div class="nav-right">
+        <div class="status-indicator">
+          <span class="pulse-dot"></span>
+          <span class="status-text">ML Model Active (RandomForest + SHAP)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- Hero Banner -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1>Predict, Explain & Prevent <span class="gradient-text">Hypertension</span></h1>
+        <p>An intelligent, explainable AI platform that predicts early blood pressure risk stages, identifies patient-specific risk drivers, and delivers interactive lifestyle simulation with clinical DASH dietary guidance.</p>
+      </div>
+    </section>
+
+    <!-- Main Grid Workspace -->
+    <div class="workspace-grid">
+      
+      <!-- Left Panel: Patient Assessment Form -->
+      <div class="card form-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-user-doctor card-icon"></i>
+            <span>Patient Assessment Form</span>
+          </div>
+          <span class="badge badge-info">Vitals & Lifestyle</span>
+        </div>
+
+        <form id="assessmentForm" onsubmit="handleAssessmentSubmit(event)">
+          
+          <div class="form-group">
+            <label for="patientName"><i class="fa-solid fa-user"></i> Patient Name</label>
+            <input type="text" id="patientName" value="Amandeep Verma" placeholder="Enter patient name" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="age"><i class="fa-solid fa-calendar-days"></i> Age (Years)</label>
+              <input type="number" id="age" value="45" min="18" max="100" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="bmi"><i class="fa-solid fa-weight-scale"></i> BMI (kg/m²)</label>
+              <input type="number" id="bmi" step="0.1" value="28.5" min="15" max="50" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="restingHr"><i class="fa-solid fa-heartbeat"></i> Resting HR (BPM)</label>
+              <input type="number" id="restingHr" value="78" min="40" max="140" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="saltIntake"><i class="fa-solid fa-bottle-droplet"></i> Daily Salt Intake</label>
+              <select id="saltIntake" required>
+                <option value="1">Low (&lt; 3g / day)</option>
+                <option value="2">Normal (3g - 6g / day)</option>
+                <option value="3" selected>High (6g - 9g / day)</option>
+                <option value="4">Severe (&gt; 9g / day)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="physicalActivity"><i class="fa-solid fa-person-running"></i> Exercise (Hrs/Wk)</label>
+              <input type="number" id="physicalActivity" step="0.5" value="2.0" min="0" max="20" required>
+            </div>
+
+            <div class="form-group">
+              <label for="stressScore"><i class="fa-solid fa-brain"></i> Daily Stress (1-10)</label>
+              <input type="number" id="stressScore" value="7" min="1" max="10" required>
+            </div>
+          </div>
+
+          <div class="form-row trio-row">
+            <div class="form-group">
+              <label for="smoking"><i class="fa-solid fa-smoking"></i> Smoking</label>
+              <select id="smoking">
+                <option value="0">Non-Smoker</option>
+                <option value="1" selected>Smoker</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="alcohol"><i class="fa-solid fa-wine-glass"></i> Alcohol</label>
+              <select id="alcohol">
+                <option value="0">None / Light</option>
+                <option value="1" selected>Moderate</option>
+                <option value="2">Heavy</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="familyHistory"><i class="fa-solid fa-dna"></i> Family History</label>
+              <select id="familyHistory">
+                <option value="0">No History</option>
+                <option value="1" selected>Yes (Family History)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="predictBtn">
+            <i class="fa-solid fa-microchip"></i> Predict Risk Stage & Analyze
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Panel: Diagnostic & Analysis Output -->
+      <div class="results-container">
+        
+        <!-- Risk Stage Result Card -->
+        <div class="card result-card" id="resultCard">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-stethoscope card-icon"></i>
+              <span>Diagnostic Assessment</span>
+            </div>
+            <span class="badge" id="riskBadge">AWAITING INPUT</span>
+          </div>
+
+          <div class="result-body" id="resultBody">
+            <div class="empty-state">
+              <i class="fa-solid fa-notes-medical empty-icon"></i>
+              <h3>No Prediction Generated Yet</h3>
+              <p>Fill in the patient vitals and click <strong>Predict Risk Stage</strong> to view real-time diagnostic AI insights.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SHAP Explainability Feature Breakdown -->
+        <div class="card shap-card hidden" id="shapCard">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-chart-pie card-icon"></i>
+              <span>SHAP Explainable Risk Factors</span>
+            </div>
+            <span class="badge badge-accent">Patient-Specific Contribution %</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="shapChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Interactive "What-If" Lifestyle Simulator -->
+        <div class="card sim-card hidden" id="simCard">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-sliders card-icon"></i>
+              <span>Interactive "What-If" Lifestyle Simulator</span>
+            </div>
+            <span class="badge badge-success">Live Risk Reduction Test</span>
+          </div>
+
+          <div class="sim-controls">
+            <div class="sim-slider-group">
+              <div class="slider-header">
+                <span><i class="fa-solid fa-bottle-droplet"></i> Target Salt Intake</span>
+                <span class="slider-val" id="targetSaltVal">Low (&lt; 3g/day)</span>
+              </div>
+              <input type="range" id="simSaltSlider" min="1" max="4" value="1" oninput="updateSimulation()">
+            </div>
+
+            <div class="sim-slider-group">
+              <div class="slider-header">
+                <span><i class="fa-solid fa-person-running"></i> Target Exercise (Hrs/Wk)</span>
+                <span class="slider-val" id="targetActVal">5.0 Hrs/Wk</span>
+              </div>
+              <input type="range" id="simActSlider" min="0" max="14" step="0.5" value="5.0" oninput="updateSimulation()">
+            </div>
+          </div>
+
+          <div class="sim-results" id="simResults">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- DASH Dietary Guidance Tab -->
+        <div class="card diet-card hidden" id="dietCard">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-utensils card-icon"></i>
+              <span>Risk-Adaptive DASH Dietary Plan</span>
+            </div>
+            <span class="badge badge-warning" id="sodiumLimitBadge">Sodium Limit</span>
+          </div>
+          <div id="dietContent">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <p>© 2026 HyperShield AI - Clinical Decision Support Platform | Developed by Amandeep Verma (E23CSEU1483) & Pujith Sri Sai Karri (E23CSEU1410)</p>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
