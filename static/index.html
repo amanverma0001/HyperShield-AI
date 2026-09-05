@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HyperShield AI - Hypertension Risk Predictor, NLP Text Analyzer & Dietary Advisor</title>
+  <title>HyperShield AI - Clinical NLP & ML Hypertension Intelligence</title>
+  <meta name="description" content="An intelligent, explainable AI platform that predicts early blood pressure risk stages, parses natural language clinical notes, decodes SHAP risk drivers, and simulates personalized lifestyle interventions.">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,7 +17,7 @@
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <link rel="stylesheet" href="/static/style.css?v=2">
+  <link rel="stylesheet" href="/static/style.css?v=3">
 
   <script>
     // Inline Fail-Safe Global Sample Loader
@@ -24,7 +25,7 @@
       const samplesNLP = {
         1: "48 year old male, BMI 29.5, heart rate 82 bpm, high salt diet with extra sodium, heavy work stress, smokes cigarettes daily, father had high BP, reports severe morning headaches and dizziness.",
         2: "38 year old female, BMI 25.0, heart rate 72 bpm, moderate salt diet, moderate stress, walks daily, non-smoker, no family history of hypertension.",
-        3: "24 year old male, BMI 21.5, heart rate 68 bpm, low sodium diet, relaxed low stress, exercise 5 hours weekly, non-smoker, no family history, feels great."
+        3: "24 year old male, BMI 21.5, heart rate 68 bpm, low sodium diet, relaxed low stress, exercise 5 hours weekly, non-smoker, no alcohol, no family history of hypertension, feels great."
       };
       const nlpText = document.getElementById('nlpText');
       if (nlpText && samplesNLP[type]) {
@@ -33,6 +34,10 @@
           runNLPParser();
         }
       }
+    }
+
+    function scrollToWorkspace() {
+      document.getElementById('app-workspace').scrollIntoView({ behavior: 'smooth' });
     }
   </script>
 </head>
@@ -45,336 +50,482 @@
         <i class="fa-solid fa-heart-pulse logo-icon"></i>
         <div class="logo-text">
           <span class="brand-name">HyperShield <span class="accent-text">AI</span></span>
-          <span class="sub-name">NLP + ML Clinical Intelligence</span>
+          <span class="sub-name">Clinical NLP + ML Intelligence</span>
         </div>
       </div>
       
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#app-workspace">Live Workspace</a>
+      </nav>
+
       <div class="nav-right">
-        <div class="status-indicator">
-          <span class="pulse-dot"></span>
-          <span class="status-text">NLP & ML Engines Online</span>
-        </div>
+        <button onclick="scrollToWorkspace()" class="btn btn-nav-cta">
+          <i class="fa-solid fa-rocket"></i> Launch Workspace
+        </button>
       </div>
     </div>
   </header>
 
-  <main class="main-container">
-    <!-- Hero Banner -->
-    <section class="hero-section">
-      <div class="hero-content">
-        <h1>Clinical NLP & ML <span class="gradient-text">Hypertension Platform</span></h1>
-        <p>Extract clinical parameters from free-text patient complaints using NLP, predict early blood pressure risk stages, explain risk drivers via SHAP, and run interactive lifestyle simulations.</p>
-      </div>
-    </section>
-
-    <!-- Main Grid Workspace -->
-    <div class="workspace-grid">
-      
-      <!-- Left Panel: NLP Clinical Text Input & Patient Assessment Form -->
-      <div class="left-panel">
-        
-        <!-- NLP Clinical Text Parser Card -->
-        <div class="card nlp-card">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa-solid fa-brain card-icon"></i>
-              <span>NLP Clinical Notes & Symptom Analyzer</span>
-            </div>
-            <span class="badge badge-accent">NLP TEXT PARSER</span>
-          </div>
-
-          <div class="nlp-body">
-            <label for="nlpText"><i class="fa-solid fa-file-signature"></i> Patient Text / Clinical Complaint Paragraph:</label>
-            <textarea id="nlpText" rows="4" placeholder="Type free-text patient complaints or click a Sample Case button below..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E1; font-family: inherit; font-size: 12.5px; outline: none; margin-bottom: 10px;"></textarea>
-
-            <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 8px;">
-              <i class="fa-solid fa-hand-pointer"></i> Click 1-Click Test Cases:
-            </div>
-            
-            <div class="sample-chips" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px;">
-              <button type="button" class="chip-btn chip-danger" onclick="loadSampleNLP(1)">
-                <i class="fa-solid fa-bolt"></i> Sample Case A (High Risk - High Salt & Stress)
-              </button>
-              <button type="button" class="chip-btn chip-warning" onclick="loadSampleNLP(2)">
-                <i class="fa-solid fa-circle-exclamation"></i> Sample Case B (Moderate Risk - Moderate Vitals)
-              </button>
-              <button type="button" class="chip-btn chip-success" onclick="loadSampleNLP(3)">
-                <i class="fa-solid fa-leaf"></i> Sample Case C (Normal Risk - Healthy Lifestyle)
-              </button>
-            </div>
-
-            <button type="button" class="btn btn-accent btn-block" onclick="runNLPParser()" id="nlpBtn">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> ⚡ Extract Vitals & Auto-Fill Form (NLP)
-            </button>
-          </div>
-        </div>
-
-        <!-- Form Card -->
-        <div class="card form-card">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa-solid fa-user-doctor card-icon"></i>
-              <span>Patient Vitals & Parameter Matrix</span>
-            </div>
-            <span class="badge badge-info">Parameters</span>
-          </div>
-
-          <form id="assessmentForm" onsubmit="handleAssessmentSubmit(event)">
-            
-            <div class="form-group">
-              <label for="patientName"><i class="fa-solid fa-user"></i> Patient Name</label>
-              <input type="text" id="patientName" value="" placeholder="Enter patient name (optional)">
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="age"><i class="fa-solid fa-calendar-days"></i> Age (Years)</label>
-                <input type="number" id="age" value="" min="18" max="100" placeholder="e.g. 45" required>
-              </div>
-              
-              <div class="form-group">
-                <label for="bmi"><i class="fa-solid fa-weight-scale"></i> BMI (kg/m²)</label>
-                <input type="number" id="bmi" step="0.1" value="" min="15" max="50" placeholder="e.g. 28.5" required>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="restingHr"><i class="fa-solid fa-heartbeat"></i> Resting HR (BPM)</label>
-                <input type="number" id="restingHr" value="" min="40" max="140" placeholder="e.g. 75" required>
-              </div>
-              
-              <div class="form-group">
-                <label for="saltIntake"><i class="fa-solid fa-bottle-droplet"></i> Daily Salt Intake</label>
-                <select id="saltIntake" required>
-                  <option value="" disabled selected>Select Salt Intake...</option>
-                  <option value="1">Low (&lt; 3g / day)</option>
-                  <option value="2">Normal (3g - 6g / day)</option>
-                  <option value="3">High (6g - 9g / day)</option>
-                  <option value="4">Severe (&gt; 9g / day)</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="physicalActivity"><i class="fa-solid fa-person-running"></i> Exercise (Hrs/Wk)</label>
-                <input type="number" id="physicalActivity" step="0.5" value="" min="0" max="20" placeholder="e.g. 2.0" required>
-              </div>
-
-              <div class="form-group">
-                <label for="stressScore"><i class="fa-solid fa-brain"></i> Daily Stress (1-10)</label>
-                <input type="number" id="stressScore" value="" min="1" max="10" placeholder="e.g. 7 (1-10)" required>
-              </div>
-            </div>
-
-            <div class="form-row trio-row">
-              <div class="form-group">
-                <label for="smoking"><i class="fa-solid fa-smoking"></i> Smoking</label>
-                <select id="smoking" required>
-                  <option value="" disabled selected>Smoking Status...</option>
-                  <option value="0">Non-Smoker</option>
-                  <option value="1">Smoker</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="alcohol"><i class="fa-solid fa-wine-glass"></i> Alcohol</label>
-                <select id="alcohol" required>
-                  <option value="" disabled selected>Alcohol Status...</option>
-                  <option value="0">None / Light</option>
-                  <option value="1">Moderate</option>
-                  <option value="2">Heavy</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="familyHistory"><i class="fa-solid fa-dna"></i> Family History</label>
-                <select id="familyHistory" required>
-                  <option value="" disabled selected>Family History?</option>
-                  <option value="0">No History</option>
-                  <option value="1">Yes (Family History)</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-block" id="predictBtn">
-              <i class="fa-solid fa-microchip"></i> Predict Risk Stage & Analyze
-            </button>
-          </form>
-        </div>
-
+  <!-- Hero Landing Section -->
+  <section class="landing-hero">
+    <div class="hero-bg-glow"></div>
+    <div class="hero-container">
+      <div class="hero-pill">
+        <span class="pill-sparkle">✨ CSET 343 – AI in HealthCare Project</span>
+        <span class="pill-text">Clinical NLP + ML + SHAP Architecture</span>
       </div>
 
-      <!-- Right Panel: Diagnostic & Analysis Output (Always Visible!) -->
-      <div class="results-container">
-        
-        <!-- NLP Extracted Tags Banner -->
-        <div class="card nlp-tags-card" id="nlpTagsCard">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa-solid fa-tags card-icon"></i>
-              <span>NLP Extracted Clinical Entities & Symptoms</span>
-            </div>
-            <span class="badge badge-accent" id="nlpTagCount">0 Entities</span>
-          </div>
-          <div id="nlpTagsList" class="nlp-tags-container">
-            <span style="font-size:12px; color:#94A3B8; font-style:italic;">No text entities extracted yet. Type patient notes or click a sample case.</span>
-          </div>
+      <h1 class="hero-title">
+        Predict, Explain & Prevent <br>
+        <span class="gradient-text">Hypertension Risks Early</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        An intelligent, explainable healthcare platform that converts free-text clinical notes into 9+ structured vitals using <strong>NLP</strong>, predicts blood pressure risk stages via <strong>Machine Learning</strong>, decodes individual risk drivers using <strong>SHAP</strong>, and provides real-time <strong>"What-If" lifestyle simulation</strong>.
+      </p>
+
+      <div class="hero-cta-group">
+        <button onclick="scrollToWorkspace()" class="btn btn-hero-primary">
+          <i class="fa-solid fa-bolt-lightning"></i> Try Interactive Workspace
+        </button>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="hero-stats-grid">
+        <div class="stat-card">
+          <div class="stat-num">1.2B+</div>
+          <div class="stat-desc">Global Hypertension Cases</div>
         </div>
-
-        <!-- Risk Stage Result Card -->
-        <div class="card result-card" id="resultCard">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa-solid fa-stethoscope card-icon"></i>
-              <span>Diagnostic Assessment</span>
-            </div>
-            <span class="badge" id="riskBadge" style="background:#94A3B8; color:#FFF;">AWAITING INPUT</span>
-          </div>
-
-          <div class="result-body" id="resultBody">
-            <div class="result-main" style="border-left-color: #94A3B8">
-              <div>
-                <div style="font-size:12px; color:#64748B; font-weight:600;">ASSESSED RISK STAGE</div>
-                <div class="result-stage-name" style="color: #64748B">Awaiting Patient Inputs</div>
-                <div style="font-size:12px; color:#475569; margin-top:4px;">Fill vitals or click a Sample Case to generate AI diagnostics.</div>
-              </div>
-              <div class="result-bp-box">
-                <div class="bp-value">-- / -- mmHg</div>
-                <div class="bp-label">Est. Blood Pressure</div>
-              </div>
-            </div>
-
-            <div class="prob-section">
-              <div class="prob-title">CLINICAL STAGE PROBABILITY BREAKDOWN</div>
-              <div class="prob-bar-group">
-                <div class="prob-label-row"><span>Normal</span><span>0%</span></div>
-                <div class="progress-track"><div class="progress-fill" style="width: 0%; background-color: #10B981;"></div></div>
-              </div>
-              <div class="prob-bar-group">
-                <div class="prob-label-row"><span>Pre-Hypertension</span><span>0%</span></div>
-                <div class="progress-track"><div class="progress-fill" style="width: 0%; background-color: #F59E0B;"></div></div>
-              </div>
-              <div class="prob-bar-group">
-                <div class="prob-label-row"><span>Stage 1</span><span>0%</span></div>
-                <div class="progress-track"><div class="progress-fill" style="width: 0%; background-color: #F97316;"></div></div>
-              </div>
-              <div class="prob-bar-group">
-                <div class="prob-label-row"><span>Stage 2</span><span>0%</span></div>
-                <div class="progress-track"><div class="progress-fill" style="width: 0%; background-color: #EF4444;"></div></div>
-              </div>
-            </div>
-
-            <div class="actions-row">
-              <button onclick="downloadClinicalPDF()" class="btn btn-primary btn-block">
-                <i class="fa-solid fa-file-pdf"></i> Download 1-Click PDF Report
-              </button>
-            </div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-num">&lt; 1 sec</div>
+          <div class="stat-desc">Instant NLP Entity Extraction</div>
         </div>
-
-        <!-- SHAP Explainability Feature Breakdown (Always Visible) -->
-        <div class="card shap-card" id="shapCard">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa-solid fa-chart-pie card-icon"></i>
-              <span>SHAP Explainable Risk Factors</span>
-            </div>
-            <span class="badge badge-accent">Patient-Specific Contribution %</span>
-          </div>
-          <div class="chart-wrapper">
-            <canvas id="shapChart"></canvas>
-          </div>
+        <div class="stat-card">
+          <div class="stat-num">9+</div>
+          <div class="stat-desc">Parsed Vitals & Symptoms</div>
         </div>
-
-        <!-- Interactive "What-If" Lifestyle Simulator (Always Visible) -->
-        <div class="card sim-card" id="simCard">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa-solid fa-sliders card-icon"></i>
-              <span>Interactive "What-If" Lifestyle Simulator</span>
-            </div>
-            <span class="badge badge-success">Live Risk Reduction Test</span>
-          </div>
-
-          <div class="sim-controls">
-            <div class="sim-slider-group">
-              <div class="slider-header">
-                <span><i class="fa-solid fa-bottle-droplet"></i> Target Salt Intake</span>
-                <span class="slider-val" id="targetSaltVal">Low (&lt; 3g/day)</span>
-              </div>
-              <input type="range" id="simSaltSlider" min="1" max="4" value="1" oninput="updateSimulation()">
-            </div>
-
-            <div class="sim-slider-group">
-              <div class="slider-header">
-                <span><i class="fa-solid fa-person-running"></i> Target Exercise (Hrs/Wk)</span>
-                <span class="slider-val" id="targetActVal">5.0 Hrs/Wk</span>
-              </div>
-              <input type="range" id="simActSlider" min="0" max="14" step="0.5" value="5.0" oninput="updateSimulation()">
-            </div>
-          </div>
-
-          <div class="sim-results" id="simResults">
-            <div class="sim-results-box">
-              <div>
-                <div style="font-size:11px; color:#047857; font-weight:700;">SIMULATED OUTCOME</div>
-                <div style="font-size:16px; font-weight:800; color: #475569;">Awaiting Prediction</div>
-                <div style="font-size:12px; color:#64748B;">Adjust sliders above to test target risk reduction</div>
-              </div>
-              <div style="text-align:right;">
-                <div class="sim-reduction-val">0%</div>
-                <div style="font-size:10px; color:#047857; font-weight:700;">RISK REDUCTION</div>
-              </div>
-            </div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-num">100%</div>
+          <div class="stat-desc">Explainable SHAP Attribution</div>
         </div>
-
-        <!-- DASH Dietary Guidance Tab (Always Visible) -->
-        <div class="card diet-card" id="dietCard">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa-solid fa-utensils card-icon"></i>
-              <span>Risk-Adaptive DASH Dietary Plan</span>
-            </div>
-            <span class="badge badge-warning" id="sodiumLimitBadge">Sodium Limit: &lt; 2000 mg</span>
-          </div>
-          <div id="dietContent">
-            <div style="font-size:13px; font-weight:700; color:#1E293B; margin-bottom:6px;">
-              Focus: General Cardiovascular Prevention Protocol
-            </div>
-            <div class="diet-grid">
-              <div class="diet-item">
-                <div class="diet-item-title"><i class="fa-solid fa-mug-hot"></i> Breakfast</div>
-                <div class="diet-item-desc">Oatmeal with berries, flaxseeds, and low-fat milk</div>
-              </div>
-              <div class="diet-item">
-                <div class="diet-item-title"><i class="fa-solid fa-bowl-rice"></i> Lunch</div>
-                <div class="diet-item-desc">Grilled chicken salad with olive oil dressing & quinoa</div>
-              </div>
-              <div class="diet-item">
-                <div class="diet-item-title"><i class="fa-solid fa-apple-whole"></i> Healthy Snack</div>
-                <div class="diet-item-desc">Raw almonds and a fresh apple</div>
-              </div>
-              <div class="diet-item">
-                <div class="diet-item-title"><i class="fa-solid fa-fish"></i> Dinner</div>
-                <div class="diet-item-desc">Baked salmon with steamed broccoli and brown rice</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
-  </main>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="section-padding">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-badge">INTELLIGENT MODEL DESIGN</span>
+        <h2>Why HyperShield AI Stands Out</h2>
+        <p>Combining Natural Language Processing with Explainable Machine Learning to deliver proactive, patient-centric cardiovascular healthcare.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon icon-blue">
+            <i class="fa-solid fa-brain"></i>
+          </div>
+          <h3>Clinical NLP Text Parser</h3>
+          <p>Extracts structured medical vitals, sodium levels, stress scores, and symptoms directly from unstructured clinical notes using medical pattern NER.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-purple">
+            <i class="fa-solid fa-stethoscope"></i>
+          </div>
+          <h3>Early Risk Stage Screening</h3>
+          <p>Classifies patient risk into 4 clinical stages (*Normal, Pre-Hypertension, Stage 1, Stage 2*) to catch elevated risk before clinical damage occurs.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-orange">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <h3>SHAP Explainable AI</h3>
+          <p>Eliminates black-box AI opacity by providing patient-specific visual bar charts showing exact % contribution of each risk factor.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-green">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <h3>"What-If" Lifestyle Simulator</h3>
+          <p>Interactive live sliders allowing patients to test how reducing sodium intake or increasing physical activity reduces their future risk score.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-yellow">
+            <i class="fa-solid fa-utensils"></i>
+          </div>
+          <h3>Risk-Adaptive DASH Diet</h3>
+          <p>Automatically generates a customized, low-sodium daily meal plan tailored to the patient's specific predicted risk category.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-pink">
+            <i class="fa-solid fa-file-pdf"></i>
+          </div>
+          <h3>1-Click PDF Report Export</h3>
+          <p>Generates a professional 1-page clinical summary report with visual charts ready for physician consultation and medical record keeping.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="section-padding bg-alt">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-badge">4-STEP WORKFLOW</span>
+        <h2>How The Platform Works</h2>
+        <p>From unstructured patient complaints to actionable clinical intelligence in four simple steps.</p>
+      </div>
+
+      <div class="workflow-steps">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <h3>Clinical Notes Input</h3>
+          <p>Type patient complaints in free text or click any 1-Click Sample Case button.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <h3>NLP Entity Extraction</h3>
+          <p>NLP engine parses 9+ medical entities and fills out the vitals matrix automatically.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <h3>ML Classification & SHAP</h3>
+          <p>RandomForest model predicts risk stage while SHAP visualizes exact risk drivers.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">04</div>
+          <h3>Simulation & PDF Export</h3>
+          <p>Simulate sodium reduction targets and export a physician-ready clinical PDF report.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Workspace Anchor -->
+  <section id="app-workspace" class="workspace-section">
+    <div class="workspace-header-banner">
+      <h2><i class="fa-solid fa-laptop-medical"></i> Interactive Clinical Workspace</h2>
+      <p>Test the NLP parser, ML risk predictor, SHAP chart, and lifestyle simulator live below:</p>
+    </div>
+
+    <div class="main-container">
+      <!-- Main Grid Workspace -->
+      <div class="workspace-grid">
+        
+        <!-- Left Panel: NLP Clinical Text Input & Patient Assessment Form -->
+        <div class="left-panel">
+          
+          <!-- NLP Clinical Text Parser Card -->
+          <div class="card nlp-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-brain card-icon"></i>
+                <span>NLP Clinical Notes & Symptom Analyzer</span>
+              </div>
+              <span class="badge badge-accent">NLP TEXT PARSER</span>
+            </div>
+
+            <div class="nlp-body">
+              <label for="nlpText"><i class="fa-solid fa-file-signature"></i> Patient Text / Clinical Complaint Paragraph:</label>
+              <textarea id="nlpText" rows="4" placeholder="Type free-text patient complaints or click a Sample Case button below..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E1; font-family: inherit; font-size: 12.5px; outline: none; margin-bottom: 10px;"></textarea>
+
+              <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 8px;">
+                <i class="fa-solid fa-hand-pointer"></i> Click 1-Click Test Cases:
+              </div>
+              
+              <div class="sample-chips" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <button type="button" class="chip-btn chip-danger" onclick="loadSampleNLP(1)">
+                  <i class="fa-solid fa-bolt"></i> Sample Case A (High Risk - High Salt & Stress)
+                </button>
+                <button type="button" class="chip-btn chip-warning" onclick="loadSampleNLP(2)">
+                  <i class="fa-solid fa-circle-exclamation"></i> Sample Case B (Moderate Risk - Moderate Vitals)
+                </button>
+                <button type="button" class="chip-btn chip-success" onclick="loadSampleNLP(3)">
+                  <i class="fa-solid fa-leaf"></i> Sample Case C (Normal Risk - Healthy Lifestyle)
+                </button>
+              </div>
+
+              <button type="button" class="btn btn-accent btn-block" onclick="runNLPParser()" id="nlpBtn">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> ⚡ Extract Vitals & Auto-Fill Form (NLP)
+              </button>
+            </div>
+          </div>
+
+          <!-- Form Card -->
+          <div class="card form-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-user-doctor card-icon"></i>
+                <span>Patient Vitals & Parameter Matrix</span>
+              </div>
+              <span class="badge badge-info">Parameters</span>
+            </div>
+
+            <form id="assessmentForm" onsubmit="handleAssessmentSubmit(event)">
+              
+              <div class="form-group">
+                <label for="patientName"><i class="fa-solid fa-user"></i> Patient Name</label>
+                <input type="text" id="patientName" value="" placeholder="Enter patient name (optional)">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="age"><i class="fa-solid fa-calendar-days"></i> Age (Years)</label>
+                  <input type="number" id="age" value="" min="18" max="100" placeholder="e.g. 45" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="bmi"><i class="fa-solid fa-weight-scale"></i> BMI (kg/m²)</label>
+                  <input type="number" id="bmi" step="0.1" value="" min="15" max="50" placeholder="e.g. 28.5" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="restingHr"><i class="fa-solid fa-heartbeat"></i> Resting HR (BPM)</label>
+                  <input type="number" id="restingHr" value="" min="40" max="140" placeholder="e.g. 75" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="saltIntake"><i class="fa-solid fa-bottle-droplet"></i> Daily Salt Intake</label>
+                  <select id="saltIntake" required>
+                    <option value="" disabled selected>Select Salt Intake...</option>
+                    <option value="1">Low (&lt; 3g / day)</option>
+                    <option value="2">Normal (3g - 6g / day)</option>
+                    <option value="3">High (6g - 9g / day)</option>
+                    <option value="4">Severe (&gt; 9g / day)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="physicalActivity"><i class="fa-solid fa-person-running"></i> Exercise (Hrs/Wk)</label>
+                  <input type="number" id="physicalActivity" step="0.5" value="" min="0" max="20" placeholder="e.g. 2.0" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="stressScore"><i class="fa-solid fa-brain"></i> Daily Stress (1-10)</label>
+                  <input type="number" id="stressScore" value="" min="1" max="10" placeholder="e.g. 7 (1-10)" required>
+                </div>
+              </div>
+
+              <div class="form-row trio-row">
+                <div class="form-group">
+                  <label for="smoking"><i class="fa-solid fa-smoking"></i> Smoking</label>
+                  <select id="smoking" required>
+                    <option value="" disabled selected>Smoking Status...</option>
+                    <option value="0">Non-Smoker</option>
+                    <option value="1">Smoker</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="alcohol"><i class="fa-solid fa-wine-glass"></i> Alcohol</label>
+                  <select id="alcohol" required>
+                    <option value="" disabled selected>Alcohol Status...</option>
+                    <option value="0">None / Light</option>
+                    <option value="1">Moderate</option>
+                    <option value="2">Heavy</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="familyHistory"><i class="fa-solid fa-dna"></i> Family History</label>
+                  <select id="familyHistory" required>
+                    <option value="" disabled selected>Family History?</option>
+                    <option value="0">No History</option>
+                    <option value="1">Yes (Family History)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block" id="predictBtn">
+                <i class="fa-solid fa-microchip"></i> Predict Risk Stage & Analyze
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+        <!-- Right Panel: Diagnostic & Analysis Output -->
+        <div class="results-container">
+          
+          <!-- NLP Extracted Tags Banner -->
+          <div class="card nlp-tags-card" id="nlpTagsCard">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-tags card-icon"></i>
+                <span>NLP Extracted Clinical Entities & Symptoms</span>
+              </div>
+              <span class="badge badge-accent" id="nlpTagCount">0 Entities</span>
+            </div>
+            <div id="nlpTagsList" class="nlp-tags-container">
+              <span style="font-size:12px; color:#94A3B8; font-style:italic;">No text entities extracted yet. Type patient notes or click a sample case.</span>
+            </div>
+          </div>
+
+          <!-- Risk Stage Result Card -->
+          <div class="card result-card" id="resultCard">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-stethoscope card-icon"></i>
+                <span>Diagnostic Assessment</span>
+              </div>
+              <span class="badge" id="riskBadge" style="background:#94A3B8; color:#FFF;">AWAITING INPUT</span>
+            </div>
+
+            <div class="result-body" id="resultBody">
+              <div class="result-main" style="border-left-color: #94A3B8">
+                <div>
+                  <div style="font-size:12px; color:#64748B; font-weight:600;">ASSESSED RISK STAGE</div>
+                  <div class="result-stage-name" style="color: #64748B">Awaiting Patient Inputs</div>
+                  <div style="font-size:12px; color:#475569; margin-top:4px;">Fill vitals or click a Sample Case to generate AI diagnostics.</div>
+                </div>
+                <div class="result-bp-box">
+                  <div class="bp-value">-- / -- mmHg</div>
+                  <div class="bp-label">Est. Blood Pressure</div>
+                </div>
+              </div>
+
+              <div class="prob-section">
+                <div class="prob-title">CLINICAL STAGE PROBABILITY BREAKDOWN</div>
+                <div class="prob-bar-group">
+                  <div class="prob-label-row"><span>Normal</span><span>0%</span></div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 0%; background-color: #10B981;"></div></div>
+                </div>
+                <div class="prob-bar-group">
+                  <div class="prob-label-row"><span>Pre-Hypertension</span><span>0%</span></div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 0%; background-color: #F59E0B;"></div></div>
+                </div>
+                <div class="prob-bar-group">
+                  <div class="prob-label-row"><span>Stage 1</span><span>0%</span></div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 0%; background-color: #F97316;"></div></div>
+                </div>
+                <div class="prob-bar-group">
+                  <div class="prob-label-row"><span>Stage 2</span><span>0%</span></div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 0%; background-color: #EF4444;"></div></div>
+                </div>
+              </div>
+
+              <div class="actions-row">
+                <button onclick="downloadClinicalPDF()" class="btn btn-primary btn-block">
+                  <i class="fa-solid fa-file-pdf"></i> Download 1-Click PDF Report
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SHAP Explainability Feature Breakdown -->
+          <div class="card shap-card" id="shapCard">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-chart-pie card-icon"></i>
+                <span>SHAP Explainable Risk Factors</span>
+              </div>
+              <span class="badge badge-accent">Patient-Specific Contribution %</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="shapChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Interactive "What-If" Lifestyle Simulator -->
+          <div class="card sim-card" id="simCard">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-sliders card-icon"></i>
+                <span>Interactive "What-If" Lifestyle Simulator</span>
+              </div>
+              <span class="badge badge-success">Live Risk Reduction Test</span>
+            </div>
+
+            <div class="sim-controls">
+              <div class="sim-slider-group">
+                <div class="slider-header">
+                  <span><i class="fa-solid fa-bottle-droplet"></i> Target Salt Intake</span>
+                  <span class="slider-val" id="targetSaltVal">Low (&lt; 3g/day)</span>
+                </div>
+                <input type="range" id="simSaltSlider" min="1" max="4" value="1" oninput="updateSimulation()">
+              </div>
+
+              <div class="sim-slider-group">
+                <div class="slider-header">
+                  <span><i class="fa-solid fa-person-running"></i> Target Exercise (Hrs/Wk)</span>
+                  <span class="slider-val" id="targetActVal">5.0 Hrs/Wk</span>
+                </div>
+                <input type="range" id="simActSlider" min="0" max="14" step="0.5" value="5.0" oninput="updateSimulation()">
+              </div>
+            </div>
+
+            <div class="sim-results" id="simResults">
+              <div class="sim-results-box">
+                <div>
+                  <div style="font-size:11px; color:#047857; font-weight:700;">SIMULATED OUTCOME</div>
+                  <div style="font-size:16px; font-weight:800; color: #475569;">Awaiting Prediction</div>
+                  <div style="font-size:12px; color:#64748B;">Adjust sliders above to test target risk reduction</div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="sim-reduction-val">0%</div>
+                  <div style="font-size:10px; color:#047857; font-weight:700;">RISK REDUCTION</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DASH Dietary Guidance Tab -->
+          <div class="card diet-card" id="dietCard">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-utensils card-icon"></i>
+                <span>Risk-Adaptive DASH Dietary Plan</span>
+              </div>
+              <span class="badge badge-warning" id="sodiumLimitBadge">Sodium Limit: &lt; 2000 mg</span>
+            </div>
+            <div id="dietContent">
+              <div style="font-size:13px; font-weight:700; color:#1E293B; margin-bottom:6px;">
+                Focus: General Cardiovascular Prevention Protocol
+              </div>
+              <div class="diet-grid">
+                <div class="diet-item">
+                  <div class="diet-item-title"><i class="fa-solid fa-mug-hot"></i> Breakfast</div>
+                  <div class="diet-item-desc">Oatmeal with berries, flaxseeds, and low-fat milk</div>
+                </div>
+                <div class="diet-item">
+                  <div class="diet-item-title"><i class="fa-solid fa-bowl-rice"></i> Lunch</div>
+                  <div class="diet-item-desc">Grilled chicken salad with olive oil dressing & quinoa</div>
+                </div>
+                <div class="diet-item">
+                  <div class="diet-item-title"><i class="fa-solid fa-apple-whole"></i> Healthy Snack</div>
+                  <div class="diet-item-desc">Raw almonds and a fresh apple</div>
+                </div>
+                <div class="diet-item">
+                  <div class="diet-item-title"><i class="fa-solid fa-fish"></i> Dinner</div>
+                  <div class="diet-item-desc">Baked salmon with steamed broccoli and brown rice</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
 
   <footer class="footer">
     <div class="footer-container">
-      <p>© 2026 HyperShield AI - Clinical NLP & ML Platform | Developed by Amandeep Verma (E23CSEU1483) & Pujith Sri Sai Karri (E23CSEU1410)</p>
+      <p>© 2026 HyperShield AI - Clinical NLP & ML Platform</p>
     </div>
   </footer>
 
-  <script src="/static/app.js?v=2"></script>
+  <script src="/static/app.js?v=3"></script>
 </body>
 </html>
