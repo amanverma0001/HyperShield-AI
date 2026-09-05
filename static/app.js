@@ -1,6 +1,87 @@
 let shapChartInstance = null;
 let currentPredictionData = null;
 
+const samplesNLP = {
+  1: "48 year old male, BMI 29.5, heart rate 82 bpm, high salt diet with extra sodium, heavy work stress, smokes cigarettes daily, father had high BP, reports severe morning headaches and dizziness.",
+  2: "38 year old female, BMI 25.0, heart rate 72 bpm, moderate salt diet, moderate stress, walks daily, non-smoker, no family history of hypertension.",
+  3: "24 year old male, BMI 21.5, heart rate 68 bpm, low sodium diet, relaxed low stress, exercise 5 hours weekly, non-smoker, no family history, feels great."
+};
+
+function loadSampleNLP(type) {
+  const nlpText = document.getElementById('nlpText');
+  if (samplesNLP[type]) {
+    nlpText.value = samplesNLP[type];
+    runNLPParser();
+  }
+}
+
+async function runNLPParser() {
+  const nlpText = document.getElementById('nlpText').value.trim();
+  if (!nlpText || nlpText.length < 5) {
+    alert('Please enter a clinical note or patient complaint paragraph to extract NLP features.');
+    return;
+  }
+
+  const nlpBtn = document.getElementById('nlpBtn');
+  nlpBtn.disabled = true;
+  nlpBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Parsing Text Entities & Auto-Filling Form...';
+
+  try {
+    const res = await fetch('/api/nlp-parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: nlpText })
+    });
+
+    const data = await res.json();
+    if (data.status === 'success') {
+      const ext = data.extracted_parameters;
+      
+      if (ext.age !== null) document.getElementById('age').value = ext.age;
+      if (ext.bmi !== null) document.getElementById('bmi').value = ext.bmi;
+      if (ext.resting_hr !== null) document.getElementById('restingHr').value = ext.resting_hr;
+      if (ext.salt_intake !== null) document.getElementById('saltIntake').value = ext.salt_intake;
+      if (ext.physical_activity !== null) document.getElementById('physicalActivity').value = ext.physical_activity;
+      if (ext.stress_score !== null) document.getElementById('stressScore').value = ext.stress_score;
+      if (ext.smoking !== null) document.getElementById('smoking').value = ext.smoking;
+      if (ext.alcohol !== null) document.getElementById('alcohol').value = ext.alcohol;
+      if (ext.family_history !== null) document.getElementById('familyHistory').value = ext.family_history;
+
+      displayNLPTags(ext.entity_tags);
+      document.getElementById('assessmentForm').dispatchEvent(new Event('submit'));
+    }
+  } catch (err) {
+    console.error('NLP Parse Error:', err);
+    alert('Failed to parse text via NLP server.');
+  } finally {
+    nlpBtn.disabled = false;
+    nlpBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> ⚡ Extract Vitals & Auto-Fill Form (NLP)';
+  }
+}
+
+function displayNLPTags(tags) {
+  const nlpTagsList = document.getElementById('nlpTagsList');
+  const nlpTagCount = document.getElementById('nlpTagCount');
+
+  if (!tags || tags.length === 0) {
+    nlpTagsList.innerHTML = '<span style="font-size:12px; color:#94A3B8; font-style:italic;">No text entities extracted yet.</span>';
+    nlpTagCount.innerText = '0 Entities';
+    return;
+  }
+
+  nlpTagCount.innerText = `${tags.length} Entities Extracted`;
+  let tagsHtml = '';
+  tags.forEach(tag => {
+    tagsHtml += `
+      <span class="nlp-tag-item" style="background-color: ${tag.color};">
+        <i class="fa-solid fa-check"></i> [${tag.category}] ${tag.text}
+      </span>
+    `;
+  });
+
+  nlpTagsList.innerHTML = tagsHtml;
+}
+
 async function handleAssessmentSubmit(event) {
   event.preventDefault();
   
@@ -10,15 +91,15 @@ async function handleAssessmentSubmit(event) {
 
   const patientData = {
     name: document.getElementById('patientName').value || 'Patient',
-    age: parseInt(document.getElementById('age').value),
-    bmi: parseFloat(document.getElementById('bmi').value),
-    resting_hr: parseInt(document.getElementById('restingHr').value),
-    salt_intake: parseInt(document.getElementById('saltIntake').value),
-    physical_activity: parseFloat(document.getElementById('physicalActivity').value),
-    stress_score: parseInt(document.getElementById('stressScore').value),
-    smoking: parseInt(document.getElementById('smoking').value),
-    alcohol: parseInt(document.getElementById('alcohol').value),
-    family_history: parseInt(document.getElementById('familyHistory').value)
+    age: parseInt(document.getElementById('age').value) || 30,
+    bmi: parseFloat(document.getElementById('bmi').value) || 22.0,
+    resting_hr: parseInt(document.getElementById('restingHr').value) || 72,
+    salt_intake: parseInt(document.getElementById('saltIntake').value) || 2,
+    physical_activity: parseFloat(document.getElementById('physicalActivity').value) || 3.0,
+    stress_score: parseInt(document.getElementById('stressScore').value) || 4,
+    smoking: parseInt(document.getElementById('smoking').value) || 0,
+    alcohol: parseInt(document.getElementById('alcohol').value) || 0,
+    family_history: parseInt(document.getElementById('familyHistory').value) || 0
   };
 
   try {
@@ -35,11 +116,6 @@ async function handleAssessmentSubmit(event) {
       renderShapChart(result.risk_breakdown);
       setupSimulatorDefaults(result.inputs);
       await fetchDashDiet(result.predicted_stage);
-      
-      // Reveal Cards
-      document.getElementById('shapCard').classList.remove('hidden');
-      document.getElementById('simCard').classList.remove('hidden');
-      document.getElementById('dietCard').classList.remove('hidden');
     }
   } catch (error) {
     alert('Error connecting to prediction server. Ensure app.py is running.');
@@ -260,7 +336,18 @@ function downloadClinicalPDF() {
   window.print();
 }
 
-// Auto-trigger initial prediction on page load
+// Initial render of empty SHAP chart on page load
 window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('assessmentForm').dispatchEvent(new Event('submit'));
+  const initialBreakdown = {
+    'Daily Salt / Sodium Intake': 0,
+    'Daily Stress Level': 0,
+    'Physical Activity Deficit': 0,
+    'Smoking Habit': 0,
+    'Genetics / Family History': 0,
+    'Body Mass Index (BMI)': 0,
+    'Alcohol Consumption': 0,
+    'Resting Heart Rate': 0,
+    'Age Factor': 0
+  };
+  renderShapChart(initialBreakdown);
 });

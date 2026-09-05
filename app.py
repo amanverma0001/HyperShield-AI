@@ -1,5 +1,6 @@
 import os
 import io
+import re
 import base64
 import joblib
 import numpy as np
@@ -8,12 +9,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
-import subprocess
 
 app = FastAPI(
-    title="HyperShield AI - Hypertension Risk Predictor & Dietary Advisor",
-    description="API server for early hypertension risk prediction, explainable AI attribution, lifestyle simulation, and DASH diet generation.",
-    version="1.0.0"
+    title="HyperShield AI - Hypertension Risk Predictor, NLP Text Analyzer & Dietary Advisor",
+    description="Full-stack AI platform integrating ML risk classification, SHAP explainability, NLP clinical text entity parsing, and DASH diet recommendations.",
+    version="2.0.0"
 )
 
 # Load trained model
@@ -50,12 +50,128 @@ class SimulationData(BaseModel):
     target_salt: int = Field(ge=1, le=4, default=1)
     target_activity: float = Field(ge=0.0, le=20.0, default=5.0)
 
+class NLPTextRequest(BaseModel):
+    text: str = Field(..., description="Free text clinical notes or patient complaints")
+
+
+def parse_patient_nlp_text(text: str):
+    """
+    NLP Entity & Symptom Extractor Engine using Medical Pattern Matching & Rule Parsing.
+    """
+    text_lower = text.lower()
+    
+    extracted = {
+        "age": None,
+        "bmi": None,
+        "resting_hr": None,
+        "salt_intake": None,
+        "physical_activity": None,
+        "stress_score": None,
+        "smoking": None,
+        "alcohol": None,
+        "family_history": None,
+        "symptoms": [],
+        "entity_tags": []
+    }
+    
+    # 1. Age Extraction
+    age_match = re.search(r'(\b\d{2}\b)\s*(?:year|yrs|years|yr|age)', text_lower) or re.search(r'age\s*(\b\d{2}\b)', text_lower)
+    if age_match:
+        extracted["age"] = int(age_match.group(1))
+        extracted["entity_tags"].append({"category": "Demographic", "text": f"Age: {extracted['age']} yrs", "color": "#3B82F6"})
+        
+    # 2. BMI Extraction
+    bmi_match = re.search(r'bmi\s*(?:of)?\s*(\d{2}(?:\.\d)?)', text_lower)
+    if bmi_match:
+        extracted["bmi"] = float(bmi_match.group(1))
+        extracted["entity_tags"].append({"category": "Vitals", "text": f"BMI: {extracted['bmi']}", "color": "#8B5CF6"})
+
+    # 3. Resting HR
+    hr_match = re.search(r'(?:hr|heart rate)\s*(?:of)?\s*(\d{2,3})', text_lower)
+    if hr_match:
+        extracted["resting_hr"] = int(hr_match.group(1))
+        extracted["entity_tags"].append({"category": "Vitals", "text": f"Heart Rate: {extracted['resting_hr']} bpm", "color": "#EC4899"})
+
+    # 4. Salt Intake NLP
+    if any(k in text_lower for k in ["severe salt", "excessive salt", "extremely salty", "high sodium"]):
+        extracted["salt_intake"] = 4
+        extracted["entity_tags"].append({"category": "Dietary NLP", "text": "Sodium: Severe (>9g)", "color": "#EF4444"})
+    elif any(k in text_lower for k in ["high salt", "lot of salt", "salty food", "extra salt", "added salt"]):
+        extracted["salt_intake"] = 3
+        extracted["entity_tags"].append({"category": "Dietary NLP", "text": "Sodium: High (6-9g)", "color": "#F97316"})
+    elif any(k in text_lower for k in ["low salt", "low sodium", "less salt", "salt restricted"]):
+        extracted["salt_intake"] = 1
+        extracted["entity_tags"].append({"category": "Dietary NLP", "text": "Sodium: Low (<3g)", "color": "#10B981"})
+    elif any(k in text_lower for k in ["normal salt", "moderate salt"]):
+        extracted["salt_intake"] = 2
+        extracted["entity_tags"].append({"category": "Dietary NLP", "text": "Sodium: Normal (3-6g)", "color": "#F59E0B"})
+
+    # 5. Stress NLP
+    if any(k in text_lower for k in ["severe stress", "extreme stress", "high tension", "massive workload", "heavy work stress", "high stress"]):
+        extracted["stress_score"] = 8
+        extracted["entity_tags"].append({"category": "Psychology NLP", "text": "Stress: High (8/10)", "color": "#EF4444"})
+    elif any(k in text_lower for k in ["moderate stress", "some stress"]):
+        extracted["stress_score"] = 5
+        extracted["entity_tags"].append({"category": "Psychology NLP", "text": "Stress: Moderate (5/10)", "color": "#F59E0B"})
+    elif any(k in text_lower for k in ["low stress", "no stress", "relaxed"]):
+        extracted["stress_score"] = 2
+        extracted["entity_tags"].append({"category": "Psychology NLP", "text": "Stress: Low (2/10)", "color": "#10B981"})
+
+    # 6. Physical Activity NLP
+    if any(k in text_lower for k in ["no exercise", "sedentary", "no physical activity", "zero workout"]):
+        extracted["physical_activity"] = 0.0
+        extracted["entity_tags"].append({"category": "Lifestyle NLP", "text": "Activity: Sedentary (0h)", "color": "#EF4444"})
+    elif any(k in text_lower for k in ["regular gym", "daily running", "active", "walks daily", "5 hours", "exercise daily"]):
+        extracted["physical_activity"] = 5.0
+        extracted["entity_tags"].append({"category": "Lifestyle NLP", "text": "Activity: Active (5h/wk)", "color": "#10B981"})
+
+    # 7. Smoking NLP
+    if any(k in text_lower for k in ["non-smoker", "no smoking", "never smoked"]):
+        extracted["smoking"] = 0
+        extracted["entity_tags"].append({"category": "Behavioral NLP", "text": "Habits: Non-Smoker", "color": "#10B981"})
+    elif any(k in text_lower for k in ["smokes", "smoker", "smoking", "cigarettes"]):
+        extracted["smoking"] = 1
+        extracted["entity_tags"].append({"category": "Behavioral NLP", "text": "Habits: Active Smoker", "color": "#EF4444"})
+
+    # 8. Alcohol NLP
+    if any(k in text_lower for k in ["no alcohol", "never drink", "does not drink", "no drinking", "none"]):
+        extracted["alcohol"] = 0
+        extracted["entity_tags"].append({"category": "Behavioral NLP", "text": "Habits: No Alcohol", "color": "#10B981"})
+    elif any(k in text_lower for k in ["heavy drinking", "alcohol daily", "frequent alcohol"]):
+        extracted["alcohol"] = 2
+        extracted["entity_tags"].append({"category": "Behavioral NLP", "text": "Habits: Heavy Alcohol", "color": "#EF4444"})
+    elif any(k in text_lower for k in ["moderate alcohol", "occasional drink"]):
+        extracted["alcohol"] = 1
+        extracted["entity_tags"].append({"category": "Behavioral NLP", "text": "Habits: Moderate Alcohol", "color": "#F59E0B"})
+
+    # 9. Family History NLP
+    if any(k in text_lower for k in ["no family history", "no genetic history", "without family history"]):
+        extracted["family_history"] = 0
+        extracted["entity_tags"].append({"category": "Genetics NLP", "text": "Genetics: No Family History", "color": "#10B981"})
+    elif any(k in text_lower for k in ["family history", "father had high bp", "mother has bp", "genetics", "parent hypertension"]):
+        extracted["family_history"] = 1
+        extracted["entity_tags"].append({"category": "Genetics NLP", "text": "Genetics: Family History Positive", "color": "#F97316"})
+
+    # 10. Symptom Recognition (NER)
+    symptom_map = {
+        "headache": "Morning Headaches",
+        "headaches": "Frequent Headaches",
+        "dizziness": "Dizziness / Vertigo",
+        "chest pain": "Chest Tightness",
+        "shortness of breath": "Shortness of Breath",
+        "blurry vision": "Blurred Vision",
+        "fatigue": "Chronic Fatigue",
+        "palpitations": "Heart Palpitations"
+    }
+    for kw, label in symptom_map.items():
+        if kw in text_lower:
+            extracted["symptoms"].append(label)
+            extracted["entity_tags"].append({"category": "Symptom NER", "text": f"Symptom: {label}", "color": "#DC2626"})
+
+    return extracted
+
 
 def calculate_local_shap_breakdown(input_dict, model, probabilities):
-    """
-    Computes patient-specific risk contribution percentages based on clinical weights and model decision.
-    """
-    # Clinical weights for hypertension factors
     weights = {
         'age': (input_dict['age'] - 30) * 0.08 if input_dict['age'] > 30 else 0.5,
         'bmi': (input_dict['bmi'] - 22.0) * 0.45 if input_dict['bmi'] > 22.0 else 0.5,
@@ -89,7 +205,6 @@ def calculate_local_shap_breakdown(input_dict, model, probabilities):
         pct = round((val / total_weight) * 100, 1)
         breakdown[label_map[key]] = pct
         
-    # Sort descending
     sorted_breakdown = dict(sorted(breakdown.items(), key=lambda item: item[1], reverse=True))
     return sorted_breakdown
 
@@ -109,9 +224,23 @@ def read_root():
     return "<h1>HyperShield AI Server Running</h1>"
 
 
+@app.post("/api/nlp-parse")
+def nlp_parse_text(data: NLPTextRequest):
+    if not data.text or len(data.text.strip()) < 5:
+        raise HTTPException(status_code=400, detail="Text paragraph must be at least 5 characters.")
+    
+    nlp_results = parse_patient_nlp_text(data.text)
+    return {
+        "status": "success",
+        "raw_text": data.text,
+        "extracted_parameters": nlp_results,
+        "extracted_tags_count": len(nlp_results["entity_tags"])
+    }
+
+
 @app.post("/api/predict")
 def predict_risk(data: PatientData):
-    input_dict = data.dict()
+    input_dict = data.model_dump()
     name = input_dict.pop('name')
     
     input_df = pd.DataFrame([input_dict], columns=feature_names)
@@ -138,15 +267,13 @@ def predict_risk(data: PatientData):
 
 @app.post("/api/simulate")
 def simulate_lifestyle_change(data: SimulationData):
-    baseline_dict = data.patient.dict()
+    baseline_dict = data.patient.model_dump()
     baseline_name = baseline_dict.pop('name')
     
-    # Baseline prediction
     base_df = pd.DataFrame([baseline_dict], columns=feature_names)
     base_stage = int(model.predict(base_df)[0])
     base_probs = model.predict_proba(base_df)[0].tolist()
     
-    # Modified simulation prediction
     sim_dict = dict(baseline_dict)
     sim_dict['salt_intake'] = data.target_salt
     sim_dict['physical_activity'] = data.target_activity
@@ -155,7 +282,6 @@ def simulate_lifestyle_change(data: SimulationData):
     sim_stage = int(model.predict(sim_df)[0])
     sim_probs = model.predict_proba(sim_df)[0].tolist()
     
-    # Calculate risk reduction
     base_risk_val = base_probs[2] + base_probs[3] * 1.5
     sim_risk_val = sim_probs[2] + sim_probs[3] * 1.5
     

@@ -162,7 +162,7 @@ body {
 /* Grid Layout */
 .workspace-grid {
   display: grid;
-  grid-template-columns: 420px 1fr;
+  grid-template-columns: 440px 1fr;
   gap: 24px;
 }
 
@@ -222,6 +222,51 @@ body {
 .badge-warning { background: #FEF3C7; color: #D97706; }
 .badge-danger { background: #FEE2E2; color: #DC2626; }
 
+/* Interactive Sample Buttons */
+.chip-btn {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background: #F8FAFC;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.chip-btn:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.chip-danger:hover { background: #FEF2F2; border-color: #FCA5A5; color: #DC2626; }
+.chip-warning:hover { background: #FFFBEB; border-color: #FCD34D; color: #D97706; }
+.chip-success:hover { background: #ECFDF5; border-color: #6EE7B7; color: #059669; }
+
+.nlp-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nlp-tag-item {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
 /* Form Inputs */
 .form-group {
   margin-bottom: 14px;
@@ -274,7 +319,7 @@ input:focus, select:focus {
   padding: 12px 18px;
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -290,9 +335,15 @@ input:focus, select:focus {
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
-.btn-primary:hover {
+.btn-accent {
+  background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.btn-primary:hover, .btn-accent:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
 }
 
 .btn-block {
@@ -301,24 +352,6 @@ input:focus, select:focus {
 }
 
 /* Diagnostic Results Card */
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-muted);
-}
-
-.empty-icon {
-  font-size: 48px;
-  color: #CBD5E1;
-  margin-bottom: 12px;
-}
-
-.empty-state h3 {
-  font-size: 16px;
-  color: #334155;
-  margin-bottom: 6px;
-}
-
 .result-main {
   display: flex;
   align-items: center;
