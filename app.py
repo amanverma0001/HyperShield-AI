@@ -134,9 +134,9 @@ def parse_patient_nlp_text(text: str):
         extracted["entity_tags"].append({"category": "Behavioral NLP", "text": "Habits: Active Smoker", "color": "#EF4444"})
 
     # 8. Alcohol NLP
-    if any(k in text_lower for k in ["no alcohol", "never drink", "does not drink", "no drinking", "none"]):
+    if any(k in text_lower for k in ["no alcohol", "never drink", "does not drink", "no drinking", "none", "light alcohol", "low alcohol", "rare alcohol"]):
         extracted["alcohol"] = 0
-        extracted["entity_tags"].append({"category": "Behavioral NLP", "text": "Habits: No Alcohol", "color": "#10B981"})
+        extracted["entity_tags"].append({"category": "Behavioral NLP", "text": "Habits: None / Light Alcohol", "color": "#10B981"})
     elif any(k in text_lower for k in ["heavy drinking", "alcohol daily", "frequent alcohol"]):
         extracted["alcohol"] = 2
         extracted["entity_tags"].append({"category": "Behavioral NLP", "text": "Habits: Heavy Alcohol", "color": "#EF4444"})
